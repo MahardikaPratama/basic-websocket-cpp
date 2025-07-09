@@ -1,0 +1,13 @@
+[requires]
+grpc/1.54.3
+protobuf/3.21.12
+uwebsockets/20.62.0
+websocketpp/0.8.2
+rapidjson/1.1.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
