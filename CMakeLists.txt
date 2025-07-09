@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(BasicGrpcEmailVerifier C CXX)
+project(BasicWebsocketEmailVerifier C CXX)
 
 # Conan path config + fix for CMake to find RapidJSON, etc.
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake OPTIONAL)
@@ -57,16 +57,27 @@ set(GENERATED_SRCS ${PROTO_SRC} ${GRPC_SRC})
 set(GENERATED_HDRS ${PROTO_HDR} ${GRPC_HDR})
 
 add_custom_target(proto_gen ALL
-  DEPENDS ${PROTO_SRC} ${PROTO_HDR} ${GRPC_SRC} ${GRPC_HDR}
+  DEPENDS ${GENERATED_SRCS} ${GENERATED_HDRS}
 )
 
+# ==================================
 # Server executable
-add_executable(server src/server.cpp ${GENERATED_SRCS})
+# ==================================
+add_executable(server
+  src/server/main.cpp
+  src/server/grpc_service.cpp
+  src/server/websocket_server.cpp
+  src/common/email_utils.cpp
+  ${GENERATED_SRCS}
+)
 add_dependencies(server proto_gen)
+
 target_include_directories(server PRIVATE
   ${GENERATED_PROTO_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/server
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/common
 )
+
 target_link_libraries(server PRIVATE
   gRPC::grpc++
   protobuf::protobuf
@@ -75,13 +86,22 @@ target_link_libraries(server PRIVATE
   rapidjson
 )
 
+# ==================================
 # Client executable
-add_executable(client src/client.cpp ${GENERATED_SRCS})
+# ==================================
+add_executable(client
+  src/client/main.cpp
+  src/client/email_verifier_client.cpp
+  ${GENERATED_SRCS}
+)
+
 add_dependencies(client proto_gen)
+
 target_include_directories(client PRIVATE
   ${GENERATED_PROTO_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/client
 )
+
 target_link_libraries(client PRIVATE
   gRPC::grpc++
   protobuf::protobuf

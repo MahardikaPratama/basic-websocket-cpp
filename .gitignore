@@ -1,5 +1,0 @@
-build/*
-.vscode/*
-*.Identifier
-*.pb.cc
-*.pb.h
