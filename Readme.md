@@ -26,7 +26,7 @@ Build and install dependencies using Conan and CMake:
 ```bash
 mkdir build && cd build
 conan install .. --build=missing
-cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+cmake .. -DCMAKE_TOOLCHAIN_FILE=Release/generators/conan_toolchain.cmake
 cmake --build .
 ```
 
