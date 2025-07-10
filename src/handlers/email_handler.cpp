@@ -1,9 +1,8 @@
-// email_utils.cpp
-#include "email_utils.hpp"
+#include "handlers/email_handler.hpp"
 #include <set>
 #include <iostream>
 
-bool validate_email(const std::string& email, emailverifier::EmailReply& reply) {
+void ValidateEmail(const std::string& email, email_verifier::EmailReply& reply) {
     auto at_pos = email.find('@');
     bool is_valid = (at_pos != std::string::npos) && (at_pos > 0) && (at_pos < email.size() - 1);
     std::string domain = is_valid ? email.substr(at_pos + 1) : "";
@@ -16,9 +15,7 @@ bool validate_email(const std::string& email, emailverifier::EmailReply& reply) 
     reply.set_domain(domain);
     reply.set_is_common_domain(common_domains.count(domain) > 0);
 
-    std::cout << "[gRPC] Email: " << email
+    std::cout << "[EmailHandler] Email: " << email
               << " | Valid: " << is_valid
               << " | Domain: " << domain << std::endl;
-
-    return is_valid;
 }

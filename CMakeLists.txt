@@ -1,46 +1,48 @@
 cmake_minimum_required(VERSION 3.15)
 project(BasicWebsocketEmailVerifier C CXX)
 
-# Conan path config + fix for CMake to find RapidJSON, etc.
+# ========================
+# Compiler & Conan Setup
+# ========================
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake OPTIONAL)
 list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
-# Compiler config
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Dependencies from Conan
+# ========================
+# Dependencies
+# ========================
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(uwebsockets REQUIRED)
 find_package(websocketpp REQUIRED)
 find_package(RapidJSON REQUIRED)
 
-# .proto file handling
-set(PROTO_FILE ${CMAKE_CURRENT_SOURCE_DIR}/proto/emailverifier.proto)
-set(GENERATED_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+# ========================
+# gRPC + Proto Generation
+# ========================
+set(PROTO_FILE ${CMAKE_CURRENT_SOURCE_DIR}/proto/email_verifier.proto)
+set(GENERATED_PROTO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/models/proto_models/email_verifier_model)
 file(MAKE_DIRECTORY ${GENERATED_PROTO_DIR})
 
-set(PROTO_SRC "${GENERATED_PROTO_DIR}/emailverifier.pb.cc")
-set(PROTO_HDR "${GENERATED_PROTO_DIR}/emailverifier.pb.h")
-set(GRPC_SRC "${GENERATED_PROTO_DIR}/emailverifier.grpc.pb.cc")
-set(GRPC_HDR "${GENERATED_PROTO_DIR}/emailverifier.grpc.pb.h")
+set(PROTO_SRC "${GENERATED_PROTO_DIR}/email_verifier.pb.cc")
+set(PROTO_HDR "${GENERATED_PROTO_DIR}/email_verifier.pb.h")
+set(GRPC_SRC "${GENERATED_PROTO_DIR}/email_verifier.grpc.pb.cc")
+set(GRPC_HDR "${GENERATED_PROTO_DIR}/email_verifier.grpc.pb.h")
+
+find_program(GRPC_CPP_PLUGIN_EXECUTABLE
+  NAMES grpc_cpp_plugin
+  REQUIRED
+)
 
 add_custom_command(
   OUTPUT ${PROTO_SRC} ${PROTO_HDR}
   COMMAND ${Protobuf_PROTOC_EXECUTABLE}
-  ARGS --cpp_out ${GENERATED_PROTO_DIR}
+  ARGS --cpp_out=${GENERATED_PROTO_DIR}
        -I ${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${PROTO_FILE}
   DEPENDS ${PROTO_FILE}
-)
-
-find_program(GRPC_CPP_PLUGIN_EXECUTABLE
-  NAMES grpc_cpp_plugin
-  HINTS ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-        ${CONAN_BIN_DIRS_GRPC} ${CONAN_BIN_DIRS_PROTOBUF}
-  PATHS ENV PATH
-  REQUIRED
 )
 
 add_custom_command(
@@ -60,23 +62,30 @@ add_custom_target(proto_gen ALL
   DEPENDS ${GENERATED_SRCS} ${GENERATED_HDRS}
 )
 
-# ==================================
-# Server executable
-# ==================================
+# ========================
+# Include directories
+# ========================
+include_directories(
+  ${GENERATED_PROTO_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/models/proto_models/email_verifier_model
+)
+
+# ========================
+# Server Executable
+# ========================
 add_executable(server
-  src/server/main.cpp
-  src/server/grpc_service.cpp
-  src/server/websocket_server.cpp
-  src/common/email_utils.cpp
+  src/app/server_main.cpp
+  src/controllers/grpc_service.cpp
+  src/handlers/email_handler.cpp
+  src/adapters/websocket_server/websocket_server.cpp
+  src/globals/email_storage.cpp
+  src/utils/json_utils.cpp
+  src/threads/grpc_websocket_threads.cpp
   ${GENERATED_SRCS}
 )
-add_dependencies(server proto_gen)
 
-target_include_directories(server PRIVATE
-  ${GENERATED_PROTO_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/server
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/common
-)
+add_dependencies(server proto_gen)
 
 target_link_libraries(server PRIVATE
   gRPC::grpc++
@@ -86,11 +95,11 @@ target_link_libraries(server PRIVATE
   rapidjson
 )
 
-# ==================================
-# Client executable
-# ==================================
+# ========================
+# Client Executable
+# ========================
 add_executable(client
-  src/client/main.cpp
+  src/app/client_main.cpp
   src/client/email_verifier_client.cpp
   ${GENERATED_SRCS}
 )
@@ -100,7 +109,9 @@ add_dependencies(client proto_gen)
 target_include_directories(client PRIVATE
   ${GENERATED_PROTO_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/client
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/models/proto_models/email_verifier_model
 )
+
 
 target_link_libraries(client PRIVATE
   gRPC::grpc++

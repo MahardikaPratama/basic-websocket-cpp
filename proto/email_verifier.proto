@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package emailverifier;
+package email_verifier;
 
 service EmailVerifier {
   rpc CheckEmail (EmailRequest) returns (EmailReply) {}

@@ -1,5 +1,5 @@
-#include "grpc_service.hpp"
-#include "websocket_server.hpp"
+#include "controllers/grpc_service.hpp"
+#include "adapters/websocket_server/websocket_server.hpp"
 
 #include <grpc++/grpc++.h>
 #include <thread>

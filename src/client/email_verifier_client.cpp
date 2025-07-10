@@ -1,15 +1,15 @@
-#include "email_verifier_client.hpp"
+#include "client/email_verifier_client.hpp"
 #include <grpc++/grpc++.h>
 #include <iostream>
 
 using grpc::ClientContext;
 using grpc::Status;
-using emailverifier::EmailRequest;
-using emailverifier::EmailReply;
-using emailverifier::DeleteReply;
+using email_verifier::EmailRequest;
+using email_verifier::EmailReply;
+using email_verifier::DeleteReply;
 
 EmailVerifierClient::EmailVerifierClient(std::shared_ptr<grpc::Channel> channel)
-    : stub_(emailverifier::EmailVerifier::NewStub(channel)) {}
+    : stub_(email_verifier::EmailVerifier::NewStub(channel)) {}
 
 EmailReply EmailVerifierClient::UpdateEmail(const std::string& email) {
     EmailRequest request;

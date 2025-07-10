@@ -46,6 +46,6 @@ Run the gRPC client (for testing or streaming input):
 You can then connect to the WebSocket server using any WebSocket client (browser, Postman, or CLI tool) and observe gRPC-driven data being transmitted in real-time.
 
 ### Notes
-- The project uses proto/emailverifier.proto to define the gRPC service.
+- The project uses proto/email_verifier.proto to define the gRPC service.
 - Ensure protoc and the gRPC plugin are available during build if extending the proto definitions.
 - Do not modify the folder structure unless necessary, as build paths rely on the current layout.

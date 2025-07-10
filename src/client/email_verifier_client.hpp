@@ -2,15 +2,15 @@
 
 #include <string>
 #include <memory>
-#include "emailverifier.grpc.pb.h"
+#include "email_verifier.grpc.pb.h"
 
 class EmailVerifierClient {
 public:
     explicit EmailVerifierClient(std::shared_ptr<grpc::Channel> channel);
 
-    emailverifier::EmailReply UpdateEmail(const std::string& email);
-    emailverifier::DeleteReply DeleteEmail(const std::string& email);
+    email_verifier::EmailReply UpdateEmail(const std::string& email);
+    email_verifier::DeleteReply DeleteEmail(const std::string& email);
 
 private:
-    std::unique_ptr<emailverifier::EmailVerifier::Stub> stub_;
+    std::unique_ptr<email_verifier::EmailVerifier::Stub> stub_;
 };
