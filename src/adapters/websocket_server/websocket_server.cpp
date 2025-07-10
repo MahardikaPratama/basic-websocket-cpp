@@ -11,6 +11,8 @@ static std::vector<uWS::WebSocket<false, true, int>*> clients;
 static std::mutex clients_mutex;
 
 void broadcast_json(const std::string& msg) {
+    // Using a lock_guard to ensure thread-safe access to the clients vector
+    // Reference: https://cplusplus.com/reference/mutex/lock_guard/
     std::lock_guard<std::mutex> lock(clients_mutex);
     for (auto* ws : clients) {
         ws->send(msg, uWS::OpCode::TEXT);
